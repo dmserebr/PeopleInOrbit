@@ -20,7 +20,8 @@ class Message:
 # integration test
 def test_people_in_orbit():
     config.DB_FILENAME = 'test.db'
-    os.remove(config.DB_FILENAME)
+    if os.path.exists(config.DB_FILENAME):
+        os.remove(config.DB_FILENAME)
     db_access.init_sqlite()
 
     user_john = User(1, 'John')
