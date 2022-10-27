@@ -1,4 +1,5 @@
 # People In Orbit (Telegram bot)
+![Run all tests](https://github.com/dmserebr/PeopleInOrbit/actions/workflows/python-run-tests.yml/badge.svg)
 
 Shows current number of people in low Earth orbit.
 
