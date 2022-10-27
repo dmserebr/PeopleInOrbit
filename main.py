@@ -3,6 +3,7 @@ import telebot
 import config
 import db_access
 import process_commands
+import updater_thread
 
 bot = telebot.TeleBot(config.BOT_TOKEN, parse_mode='html')
 
@@ -29,6 +30,9 @@ def send_people_in_orbit(message):
 
 if __name__ == '__main__':
     db_access.check_sqlite_exists()
+
+    updater_thread = updater_thread.UpdaterThread()
+    updater_thread.start()
 
     print('Starting polling')
     bot.infinity_polling()
