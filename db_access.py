@@ -1,4 +1,5 @@
 import json
+import logging
 import sqlite3
 from pathlib import Path
 
@@ -92,18 +93,16 @@ def check_sqlite_exists():
         db.resolve(strict=True)
         try:
             init_sqlite()  # hack until versioned migrations are supported
-        except Exception as e:
-            print("Error when initializing database: ", e.__repr__(), e.args)
-            pass
+        except Exception:
+            logging.exception('Error when initializing database')
     except FileNotFoundError:
-        print("Database not found, trying to create a new one")
+        logging.warning('Database not found, trying to create a new one')
         try:
             init_sqlite()
-        except Exception as e:
-            print("Error when creating database: ", e.__repr__(), e.args)
-            pass
+        except Exception:
+            logging.exception('Error when creating database')
         else:
-            print("Successful created database")
+            logging.info('Successful created database')
 
 
 def read_all_rows(table):
@@ -115,3 +114,23 @@ def read_all_rows(table):
     rows = c.fetchall()
     conn.close()
     return rows
+
+
+def get_last_daily_data():
+    conn = sqlite_connect()
+    c = conn.cursor()
+
+    c.execute('SELECT data FROM daily_data ORDER BY day DESC LIMIT 1')
+
+    row = c.fetchone()
+    conn.close()
+
+    if not row:
+        logging.error('Error: no daily data exists')
+        return None
+
+    try:
+        return json.loads(row[0])
+    except Exception:
+        logging.exception('Error when parsing JSON')
+        return None

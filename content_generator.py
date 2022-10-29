@@ -1,3 +1,5 @@
+import logging
+
 import http_data_loader
 import message_formatter
 import wiki_parser
@@ -11,7 +13,7 @@ def get_people_in_orbit():
         page_soup = http_data_loader.load_astronauts()
         astronauts_data = wiki_parser.get_astronauts(page_soup)
         text = message_formatter.generate_msg(astronauts_data)
-    except Exception as e:
-        print('Got exception: ', e.__repr__(), e.args)
+    except Exception:
+        logging.exception('Error while parsing data from wiki')
 
     return text, astronauts_data
