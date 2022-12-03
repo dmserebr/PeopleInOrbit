@@ -11,9 +11,15 @@ class User:
         self.first_name = first_name
 
 
+class Chat:
+    def __init__(self, id):
+        self.id = id
+
+
 class Message:
-    def __init__(self, from_user, text):
+    def __init__(self, from_user, chat, text):
         self.from_user = from_user
+        self.chat = chat
         self.text = text
 
 
@@ -25,14 +31,16 @@ def test_people_in_orbit():
     db_access.init_sqlite()
 
     user_john = User(1, 'John')
-    message1 = Message(user_john, '/peopleinorbit')
-    message2 = Message(user_john, '/peopleinorbit')
+    chat_john = Chat(1)
+    message1 = Message(user_john, chat_john, '/peopleinorbit')
+    message2 = Message(user_john, chat_john, '/peopleinorbit')
 
     process_commands.process_people_in_orbit(message1)
     process_commands.process_people_in_orbit(message2)
 
     user_mark = User(2, 'Mark')
-    message3 = Message(user_mark, '/peopleinorbit')
+    chat_mark = Chat(2)
+    message3 = Message(user_mark, chat_mark, '/peopleinorbit')
 
     process_commands.process_people_in_orbit(message3)
 
