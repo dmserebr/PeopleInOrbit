@@ -38,7 +38,7 @@ def format_added(astronauts):
     msgs = []
     for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
         astronauts_at_station = list(astronauts_at_station)
-        msg = f'<b>Woohoo!! 🎉🎉🎉\n\n {len(astronauts_at_station)} people have just arrived to {station_name}!</b>'
+        msg = f'<b>Woohoo!! 🎉🎉🎉\n\n {len(astronauts_at_station)} people have just arrived at {station_name}!</b>'
 
         for astronaut in astronauts_at_station:
             msg += '\n • ' + astronaut['name'] + ' ' + get_country_emoji(astronaut['country'])
