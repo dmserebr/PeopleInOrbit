@@ -32,3 +32,29 @@ def generate_msg(astronauts):
             msg += '\n • ' + astronaut['name'] + ' ' + get_country_emoji(astronaut['country'])
 
     return msg
+
+
+def format_added(astronauts):
+    msgs = []
+    for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
+        astronauts_at_station = list(astronauts_at_station)
+        msg = f'<b>Woohoo!! 🎉🎉🎉\n\n {len(astronauts_at_station)} people have just arrived to {station_name}!</b>'
+
+        for astronaut in astronauts_at_station:
+            msg += '\n • ' + astronaut['name'] + ' ' + get_country_emoji(astronaut['country'])
+        msgs.append(msg)
+
+    return '\n\n'.join(msgs) + '\n\nGo to /peopleinorbit to see all people in orbit right now 🧑‍🚀'
+
+
+def format_removed(astronauts):
+    msgs = []
+    for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
+        astronauts_at_station = list(astronauts_at_station)
+        msg = f'<b>😢😢\n\n{len(astronauts_at_station)} people have just left {station_name}...</b>'
+
+        for astronaut in astronauts_at_station:
+            msg += '\n • ' + astronaut['name'] + ' ' + get_country_emoji(astronaut['country'])
+        msgs.append(msg)
+
+    return '\n\n'.join(msgs) + '\n\nGo to /peopleinorbit to see all people in orbit right now 🧑‍🚀'

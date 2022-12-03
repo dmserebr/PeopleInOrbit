@@ -39,8 +39,8 @@ if __name__ == '__main__':
     db_access.check_sqlite_exists()
 
     if config.UPDATER_ENABLED:
-        updater_thread = updater_thread.UpdaterThread()
-        updater_thread.start()
+        updater_thread_obj = updater_thread.UpdaterThread()
+        updater_thread_obj.start()
 
     if config.FLASK_APP_ENABLED:
         app_thread = flaskapp.FlaskAppThread()

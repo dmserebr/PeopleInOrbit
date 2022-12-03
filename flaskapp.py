@@ -16,7 +16,7 @@ def index():
 
     result = {}
     try:
-        last_daily_data = db_access.get_last_daily_data()
+        last_daily_data = db_access.get_daily_data()
         astronauts = last_daily_data['astronauts']
 
         items = [

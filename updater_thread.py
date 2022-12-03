@@ -7,10 +7,11 @@ import schedule
 import config
 import db_access
 import http_data_loader
+import send_messages
 import wiki_parser
 
 
-def update_astronaut_data():
+def process_updates():
     logging.info('Updating astronaut data according to schedule')
     astronauts_data = None
     try:
@@ -19,11 +20,32 @@ def update_astronaut_data():
     except Exception:
         logging.exception('Error while updating astronauts data')
 
+    astronauts_data_for_yesterday = db_access.get_daily_data(exclude_today=True)['astronauts']
+
     db_access.store_data({'astronauts': astronauts_data})
+
+    # send updates
+    updates = calculate_updates(astronauts_data, astronauts_data_for_yesterday)
+    if updates:
+        logging.info('Sending updates to all users')
+        send_messages.send_updates_to_all_users(updates)
+
+
+def calculate_updates(data, data_for_yesterday):
+    names_today = [astronaut['name'] for astronaut in data]
+    names_yesterday = [astronaut['name'] for astronaut in data_for_yesterday]
+
+    added = [astronaut for astronaut in data if not astronaut['name'] in names_yesterday]
+    removed = [astronaut for astronaut in data_for_yesterday if not astronaut['name'] in names_today]
+
+    if added + removed:
+        return {'added': added, 'removed': removed}
+    else:
+        return None
 
 
 def init_jobs():
-    schedule.every().day.at(config.UPDATER_START_TIME).do(update_astronaut_data).tag('update_astronaut_data')
+    schedule.every().day.at(config.UPDATER_START_TIME).do(process_updates).tag('process_updates')
 
 
 class UpdaterThread(threading.Thread):

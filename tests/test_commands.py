@@ -48,7 +48,7 @@ def test_people_in_orbit():
     interval_data = db_access.read_all_rows(table='interval_data')
     assert len(interval_data) == 3
 
-    last_daily_data = db_access.get_last_daily_data()
+    last_daily_data = db_access.get_daily_data()
     assert last_daily_data is not None
     assert len(last_daily_data['astronauts']) > 0
     first_astronaut = last_daily_data['astronauts'][0]
