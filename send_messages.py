@@ -19,8 +19,8 @@ def send_updates_to_all_users(updates):
         uid = user[1]
         chat_id = user[2]
         if chat_id is None:
-            logging.warning(f'Unfortunately, chat_id of user {uid} is unknown, cannot send message!')
-            continue
+            logging.warning(f'Unfortunately, chat_id of user {uid} is unknown, attempting to use uid')
+            chat_id = uid
 
         try:
             if added:
