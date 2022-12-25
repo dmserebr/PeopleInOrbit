@@ -15,12 +15,12 @@ def process_updates():
     logging.info('Updating astronaut data according to schedule')
     astronauts_data = None
     try:
-        page_soup = http_data_loader.load_astronauts()
-        astronauts_data = wiki_parser.get_astronauts(page_soup)
+        astronauts_data = get_astronauts_data()
     except Exception:
         logging.exception('Error while updating astronauts data')
 
-    astronauts_data_for_yesterday = db_access.get_daily_data(exclude_today=True)['astronauts']
+    data_for_yesterday = db_access.get_daily_data(exclude_today=True)
+    astronauts_data_for_yesterday = data_for_yesterday['astronauts'] if data_for_yesterday else []
 
     db_access.store_data({'astronauts': astronauts_data})
 
@@ -29,6 +29,11 @@ def process_updates():
     if updates:
         logging.info('Sending updates to all users')
         send_messages.send_updates_to_all_users(updates)
+
+
+def get_astronauts_data():
+    page_soup = http_data_loader.load_astronauts()
+    return wiki_parser.get_astronauts(page_soup)
 
 
 def calculate_updates(data, data_for_yesterday):

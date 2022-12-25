@@ -52,6 +52,16 @@ def store_data(payload):
     conn.close()
 
 
+def store_data_with_ts(payload, ts):
+    conn = sqlite_connect()
+    payload_dump = json.dumps(payload)
+    conn.execute('''INSERT OR REPLACE INTO daily_data (day, data, update_ts) VALUES (?, ?, ?)''',
+                 (ts.date(), payload_dump, ts))
+    conn.execute('''INSERT INTO interval_data (interval_ts, data) VALUES (?, ?)''', (ts, payload_dump))
+    conn.commit()
+    conn.close()
+
+
 def update_sent_updates(user_id):
     conn = sqlite_connect()
 
@@ -145,7 +155,7 @@ def get_daily_data(exclude_today=False):
     conn = sqlite_connect()
     c = conn.cursor()
 
-    sql = 'SELECT data FROM daily_data{} ORDER BY day DESC LIMIT 1'\
+    sql = 'SELECT data FROM daily_data{} ORDER BY day DESC LIMIT 1' \
         .format(' WHERE day < DATE(\'now\')' if exclude_today else '')
     c.execute(sql)
 

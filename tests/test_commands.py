@@ -1,8 +1,13 @@
 import os
+from pathlib import Path
+
+import pytest
 
 import config
 import db_access
 import process_commands
+
+CURRENT_DIR = Path(__file__).parent
 
 
 class User:
@@ -23,13 +28,24 @@ class Message:
         self.text = text
 
 
-# integration test
-def test_people_in_orbit():
+@pytest.fixture(autouse=True)
+def run_before_and_after_tests():
+    cleanup_test_db()
+
+    yield
+
+    cleanup_test_db()
+
+
+def cleanup_test_db():
     config.DB_FILENAME = 'test.db'
     if os.path.exists(config.DB_FILENAME):
         os.remove(config.DB_FILENAME)
     db_access.init_sqlite()
 
+
+# integration test
+def test_people_in_orbit():
     user_john = User(1, 'John')
     chat_john = Chat(1)
     message1 = Message(user_john, chat_john, '/peopleinorbit')
