@@ -1,7 +1,7 @@
 import json
 import os
 import sqlite3
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import call
 
@@ -62,7 +62,7 @@ def test_updater_if_no_data(mocker):
 
     daily_data_after = db_access.read_all_rows('daily_data')
     assert len(daily_data_after) == 1
-    assert daily_data_after[0][0] == date.today().strftime('%Y-%m-%d')
+    assert daily_data_after[0][0] == datetime.strftime(datetime.utcnow().date(), '%Y-%m-%d')
     assert daily_data_after[0][1] == '{"astronauts": []}'
 
     users_after = db_access.read_all_rows('users')
@@ -91,7 +91,7 @@ def test_updater_if_data_different(mocker):
     assert final_daily_data[0][0] == '2022-12-15'
     assert final_daily_data[0][1] == '{"astronauts": ' + json.dumps(data_for_yesterday) + '}'
     assert final_daily_data[0][2] == '2022-12-15 00:00:00'
-    assert final_daily_data[1][0] == date.today().strftime('%Y-%m-%d')
+    assert final_daily_data[1][0] == datetime.strftime(datetime.utcnow().date(), '%Y-%m-%d')
     assert final_daily_data[1][1] == '{"astronauts": ' + json.dumps(data_for_today) + '}'
     assert datetime.strptime(final_daily_data[1][2], '%Y-%m-%d %H:%M:%S') >= test_start_ts
 

@@ -162,7 +162,7 @@ def get_daily_data(exclude_today=False):
     conn = sqlite_connect()
     c = conn.cursor()
 
-    sql = 'SELECT data FROM daily_data{} ORDER BY day DESC LIMIT 1' \
+    sql = 'SELECT data FROM daily_data ORDER BY day DESC LIMIT 1' \
         .format(' WHERE day < DATE(\'now\')' if exclude_today else '')
     c.execute(sql)
 

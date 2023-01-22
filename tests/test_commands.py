@@ -1,4 +1,6 @@
+import json
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -8,6 +10,9 @@ import db_access
 import process_commands
 
 CURRENT_DIR = Path(__file__).parent
+
+
+# Integration test
 
 
 class User:
@@ -44,7 +49,6 @@ def cleanup_test_db():
     db_access.init_sqlite()
 
 
-# integration test
 def test_people_in_orbit():
     user_john = User(1, 'John')
     chat_john = Chat(1)
@@ -78,3 +82,36 @@ def test_people_in_orbit():
     first_astronaut = last_daily_data['astronauts'][0]
     assert first_astronaut['name']
     assert first_astronaut['country']
+
+
+def test_people_in_orbit_if_has_data():
+    data_for_yesterday = json.loads(load_resource('test_astronauts_data.json'))
+    db_access.store_data_with_ts({'astronauts': data_for_yesterday}, datetime.utcnow() - timedelta(days=1))
+
+    user_john = User(1, 'John')
+    chat_john = Chat(1)
+    message1 = Message(user_john, chat_john, '/peopleinorbit')
+    message2 = Message(user_john, chat_john, '/peopleinorbit')
+
+    process_commands.process_people_in_orbit(message1)
+    process_commands.process_people_in_orbit(message2)
+
+    queries = db_access.read_all_rows(table='queries')
+    assert len(queries) == 2
+
+    users = db_access.read_all_rows(table='users')
+    assert len(users) == 1
+
+    daily_data = db_access.read_all_rows(table='daily_data')
+    assert len(daily_data) == 1
+
+    interval_data = db_access.read_all_rows(table='interval_data')
+    assert len(interval_data) == 3
+
+    last_daily_data = db_access.get_daily_data()
+    assert last_daily_data is not None
+    assert last_daily_data['astronauts'] == data_for_yesterday
+
+
+def load_resource(resource_name):
+    return open(CURRENT_DIR / 'resources' / resource_name, encoding='utf-8').read()
