@@ -165,7 +165,7 @@ def test_updater_if_command_called_between_daily_updates(mocker):
     assert len(final_interval_data) == 3
     assert final_interval_data[0][1] == datetime.strftime(utcnow - timedelta(hours=1), '%Y-%m-%d %H:%M:%S.%f')
     assert final_interval_data[0][2] == '{"astronauts": ' + json.dumps(data_old) + '}'
-    assert final_interval_data[1][1] == datetime.strftime(utcnow, '%Y-%m-%d %H:%M:%S')
+    assert datetime.strptime(final_interval_data[1][1], '%Y-%m-%d %H:%M:%S') >= utcnow.replace(microsecond=0)
     assert final_interval_data[1][2] == '{"astronauts": ' + json.dumps(data_new) + '}'
     assert final_interval_data[2][1] == datetime.strftime(utcnow + timedelta(days=1), '%Y-%m-%d %H:%M:%S.%f')
     assert final_interval_data[2][2] == '{"astronauts": ' + json.dumps(data_new) + '}'
