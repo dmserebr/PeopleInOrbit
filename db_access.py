@@ -43,11 +43,18 @@ def store_user(user_info, chat_id):
     conn.close()
 
 
-def store_data(payload):
+def store_interval_data(payload):
+    conn = sqlite_connect()
+    payload_dump = json.dumps(payload)
+    conn.execute('''INSERT INTO interval_data (data) VALUES (?)''', (payload_dump,))
+    conn.commit()
+    conn.close()
+
+
+def store_daily_data(payload):
     conn = sqlite_connect()
     payload_dump = json.dumps(payload)
     conn.execute('''INSERT OR REPLACE INTO daily_data (day, data) VALUES (DATE('now'), ?)''', (payload_dump,))
-    conn.execute('''INSERT INTO interval_data (data) VALUES (?)''', (payload_dump,))
     conn.commit()
     conn.close()
 
@@ -181,7 +188,7 @@ def get_users_to_send_updates():
         '''SELECT u.id, u.telegram_uid, u.chat_id
             FROM users u 
             LEFT JOIN sent_updates s ON u.id = s.user_id 
-            WHERE s.sent_update_ts < date('now') OR s.sent_update_ts IS NULL''')
+            WHERE s.sent_update_ts < DATE('now') OR s.sent_update_ts IS NULL''')
 
     rows = c.fetchall()
     conn.close()

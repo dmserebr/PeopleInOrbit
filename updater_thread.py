@@ -22,7 +22,9 @@ def process_updates():
     data_for_yesterday = db_access.get_daily_data(exclude_today=True)
     astronauts_data_for_yesterday = data_for_yesterday['astronauts'] if data_for_yesterday else []
 
-    db_access.store_data({'astronauts': astronauts_data})
+    payload = {'astronauts': astronauts_data}
+    db_access.store_interval_data(payload)
+    db_access.store_daily_data(payload)
 
     # send updates
     updates = calculate_updates(astronauts_data, astronauts_data_for_yesterday)
