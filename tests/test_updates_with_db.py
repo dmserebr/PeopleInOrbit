@@ -36,6 +36,7 @@ class Message:
 @pytest.fixture(autouse=True)
 def run_before_and_after_tests():
     cleanup_test_db()
+    config.FIREBASE_NOTIFICATIONS_ENABLED = False
 
     yield
 
