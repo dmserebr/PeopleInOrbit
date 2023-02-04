@@ -5,6 +5,7 @@ import telebot
 
 import config
 import db_access
+import firebase_sender
 import flaskapp
 import process_commands
 import updater_thread
@@ -45,6 +46,9 @@ if __name__ == '__main__':
     if config.FLASK_APP_ENABLED:
         app_thread = flaskapp.FlaskAppThread()
         app_thread.start()
+
+    if config.FIREBASE_NOTIFICATIONS_ENABLED:
+        firebase_sender.init_client(config.FIREBASE_KEY_PATH)
 
     if config.BOT_ENABLED:
         logging.info('Starting polling')

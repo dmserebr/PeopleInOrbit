@@ -6,7 +6,9 @@ import schedule
 
 import config
 import db_access
+import firebase_sender
 import http_data_loader
+import message_formatter
 import send_messages
 import wiki_parser
 
@@ -31,6 +33,19 @@ def process_updates():
     if updates:
         logging.info('Sending updates to all users')
         send_messages.send_updates_to_all_users(updates)
+
+        if config.FIREBASE_NOTIFICATIONS_ENABLED:
+            logging.info('Sending push notifications to Firebase')
+            notifications = []
+            if updates['added']:
+                added_notifications = message_formatter.format_added_firebase(updates['added'])
+                notifications.append(added_notifications)
+            if updates['removed']:
+                removed_notifications = message_formatter.format_removed_firebase(updates['removed'])
+                notifications.append(removed_notifications)
+
+            if notifications:
+                firebase_sender.send_push_notifications(notifications)
 
 
 def get_astronauts_data():
