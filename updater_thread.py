@@ -30,7 +30,7 @@ def process_updates():
 
     # send updates
     updates = calculate_updates(astronauts_data, astronauts_data_for_yesterday)
-    if updates:
+    if updates and config.UPDATER_SEND_MESSAGES_ENABLED:
         logging.info('Sending updates to all users')
         send_messages.send_updates_to_all_users(updates)
 
@@ -49,8 +49,27 @@ def process_updates():
 
 
 def get_astronauts_data():
+    logging.info('Start get_astronauts_data')
+
     page_soup = http_data_loader.load_astronauts()
-    return wiki_parser.get_astronauts(page_soup)
+    astronauts_data = wiki_parser.get_astronauts(page_soup)
+    enriched_astronauts_data = enrich_with_images(astronauts_data)
+
+    logging.info('Finish get_astronauts_data')
+    return enriched_astronauts_data
+
+
+def enrich_with_images(astronauts_data):
+    result = []
+    for item in astronauts_data:
+        enriched_item = item.copy()
+        if item['url']:
+            page_soup = http_data_loader.load_from_url(config.WIKI_URL + item['url'])
+            image_data = wiki_parser.get_person_image(page_soup)
+            if image_data:
+                enriched_item['image'] = image_data
+        result.append(enriched_item)
+    return result
 
 
 def calculate_updates(data, data_for_yesterday):

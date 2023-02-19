@@ -10,5 +10,11 @@ def load_astronauts():
     return soup
 
 
+def load_from_url(url):
+    page = load_page_content(url)
+    soup = BeautifulSoup(page, 'html.parser')
+    return soup
+
+
 def load_page_content(url):
     return requests.get(url).content

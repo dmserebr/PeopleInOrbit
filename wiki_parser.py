@@ -4,7 +4,7 @@ def get_astronauts(soup):
 
     astronauts = []
     for station_row in station_rows:
-        header_col = station_row.find('th', {'class': 'navbox-group'})
+        header_col = station_row.find('th', class_='navbox-group')
         if header_col:
             station_a = header_col.find('a')
             station_name = station_a.get_text()
@@ -21,7 +21,7 @@ def get_astronauts(soup):
                     astronaut_a = astronaut_row.find('a', recursive=False)
                     astronaut_name = astronaut_a.get_text()
                     astronaut_url = astronaut_a['href']
-                    country = astronaut_row.find('span', {'class': 'flagicon'}).find('a')
+                    country = astronaut_row.find('span', class_='flagicon').find('a')
                     country_name = country['title']
                     country_url = country['href']
 
@@ -36,3 +36,15 @@ def get_astronauts(soup):
                         'station_url': station_url
                     })
     return astronauts
+
+
+def get_person_image(soup):
+    image_row = soup.find('td', class_='infobox-image')
+    if image_row:
+        return {
+            'src': image_row.find('img')["src"],
+            'alt': image_row.find('img')["alt"],
+            'width': int(image_row.find('img')['width']),
+            'height': int(image_row.find('img')['height'])
+        }
+    return None

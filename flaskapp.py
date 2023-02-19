@@ -19,14 +19,19 @@ def index():
         last_daily_data = db_access.get_daily_data()
         astronauts = last_daily_data['astronauts']
 
-        items = [
-            {
+        items = []
+        for astronaut in astronauts:
+            item = {
                 'name': astronaut['name'],
+                'wiki_url': config.WIKI_URL + astronaut['url'],
                 'country': astronaut['country'],
-                'flag': message_formatter.get_country_emoji(astronaut['country'])
+                'flag': message_formatter.get_country_emoji(astronaut['country']),
+                'station': astronaut['station_name']
             }
-            for astronaut in astronauts
-        ]
+            if astronaut['image']:
+                item['image'] = astronaut['image']
+                items.append(item)
+
         return {'items': items}
     except Exception:
         logging.exception('Error while getting astronauts')
