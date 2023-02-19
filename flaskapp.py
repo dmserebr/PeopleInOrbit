@@ -30,7 +30,7 @@ def index():
             }
             if astronaut['image']:
                 item['image'] = astronaut['image']
-                items.append(item)
+            items.append(item)
 
         return {'items': items}
     except Exception:
