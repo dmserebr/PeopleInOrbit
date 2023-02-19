@@ -28,7 +28,7 @@ def index():
                 'flag': message_formatter.get_country_emoji(astronaut['country']),
                 'station': astronaut['station_name']
             }
-            if astronaut['image']:
+            if 'image' in astronaut:
                 item['image'] = astronaut['image']
             items.append(item)
 
