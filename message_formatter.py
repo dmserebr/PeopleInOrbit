@@ -44,7 +44,8 @@ def format_added(astronauts):
             msg += '\n • ' + astronaut['name'] + ' ' + get_country_emoji(astronaut['country'])
         msgs.append(msg)
 
-    return '\n\n'.join(msgs) + '\n\nGo to /peopleinorbit to see all people in orbit right now 🧑‍🚀'
+    return '\n\n'.join(msgs) + '\n\nVisit our webpage at https://peopleinspacenow.com or go to /peopleinorbit ' \
+                               'to see all people in orbit right now 🧑‍🚀'
 
 
 def format_added_firebase(astronauts):
@@ -59,18 +60,6 @@ def format_added_firebase(astronauts):
     return {'title': title, 'description': '\n\n'.join(descriptions)}
 
 
-def format_removed_firebase(astronauts):
-    title = f'😢😢 {len(astronauts)} people have just people have just left orbit...'
-    descriptions = []
-    for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
-        astronaut_titles = []
-        for astronaut in astronauts_at_station:
-            astronaut_titles.append(astronaut['name'] + ' ' + get_country_emoji(astronaut['country']))
-        msg = ', '.join(astronaut_titles) + ' have left ' + station_name
-        descriptions.append(msg)
-    return {'title': title, 'description': '\n\n'.join(descriptions)}
-
-
 def format_removed(astronauts):
     msgs = []
     for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
@@ -81,4 +70,17 @@ def format_removed(astronauts):
             msg += '\n • ' + astronaut['name'] + ' ' + get_country_emoji(astronaut['country'])
         msgs.append(msg)
 
-    return '\n\n'.join(msgs) + '\n\nGo to /peopleinorbit to see all people in orbit right now 🧑‍🚀'
+    return '\n\n'.join(msgs) + '\n\nVisit our webpage at https://peopleinspacenow.com or go to /peopleinorbit ' \
+                               'to see all people in orbit right now 🧑‍🚀'
+
+
+def format_removed_firebase(astronauts):
+    title = f'😢😢 {len(astronauts)} people have just people have just left orbit...'
+    descriptions = []
+    for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
+        astronaut_titles = []
+        for astronaut in astronauts_at_station:
+            astronaut_titles.append(astronaut['name'] + ' ' + get_country_emoji(astronaut['country']))
+        msg = ', '.join(astronaut_titles) + ' have left ' + station_name
+        descriptions.append(msg)
+    return {'title': title, 'description': '\n\n'.join(descriptions)}
