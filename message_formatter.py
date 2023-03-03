@@ -9,12 +9,13 @@ COUNTRY_EMOJIS = {
     'Canada': '🇨🇦',
     'Germany': '🇩🇪',
     'France': '🇫🇷',
-    'Italy': '🇮🇹'
+    'Italy': '🇮🇹',
+    'United Arab Emirates': '🇦🇪'
 }
 
 
 def get_country_emoji(country_name):
-    emoji = COUNTRY_EMOJIS[country_name]
+    emoji = COUNTRY_EMOJIS.get(country_name)
     if not emoji:
         logging.warning(f'Missing emoji for country {country_name}')
     return emoji
