@@ -59,8 +59,7 @@ def test_updater_if_no_previous_data(mocker):
     assert len(firebase_call_args) == 1
     assert len(firebase_call_args[0].args[0]) == 1
     assert firebase_call_args[0].args[0][0].topic == 'people_in_orbit'
-    assert firebase_call_args[0].args[0][0].notification.title == \
-           'Woohoo!! 🎉🎉🎉 10 new people have just arrived into orbit!'
+    assert firebase_call_args[0].args[0][0].notification.title == '🎉🎉 10 new people in orbit'
     assert firebase_call_args[0].args[0][0].notification.body == \
            'Sergey Prokopyev 🇷🇺, Dmitry Petelin 🇷🇺, Francisco Rubio 🇺🇸, ' \
            'Nicole Aunapu Mann 🇺🇸, Josh A. Cassada 🇺🇸, Koichi Wakata 🇯🇵, Anna Kikina 🇷🇺 ' \
@@ -108,10 +107,10 @@ def test_updater_if_data_is_different(mocker):
     assert len(firebase_call_args) == 1
     assert len(firebase_call_args[0].args[0]) == 2
     assert firebase_call_args[0].args[0][0].notification.title == \
-           'Woohoo!! 🎉🎉🎉 1 new people have just arrived into orbit!'
+           '🎉🎉 1 new people in orbit'
     assert firebase_call_args[0].args[0][0].notification.body == \
            'Sergey Prokopyev 🇷🇺 have joined International Space Station'
     assert firebase_call_args[0].args[0][1].notification.title == \
-           '😢😢 2 people have just people have just left orbit...'
+           '😢😢 2 people left orbit'
     assert firebase_call_args[0].args[0][1].notification.body == \
            'Deng Qingming 🇨🇳, Zhang Lu 🇨🇳 have left Tiangong space station'

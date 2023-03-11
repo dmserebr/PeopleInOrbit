@@ -50,7 +50,7 @@ def format_added(astronauts):
 
 
 def format_added_firebase(astronauts):
-    title = f'Woohoo!! 🎉🎉🎉 {len(astronauts)} new people have just arrived into orbit!'
+    title = f'🎉🎉 {len(astronauts)} new people in orbit'
     descriptions = []
     for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
         astronaut_titles = []
@@ -76,7 +76,7 @@ def format_removed(astronauts):
 
 
 def format_removed_firebase(astronauts):
-    title = f'😢😢 {len(astronauts)} people have just people have just left orbit...'
+    title = f'😢😢 {len(astronauts)} people left orbit'
     descriptions = []
     for station_name, astronauts_at_station in itertools.groupby(astronauts, key=lambda x: x['station_name']):
         astronaut_titles = []
