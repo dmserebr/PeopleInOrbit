@@ -7,12 +7,13 @@ import pytest
 
 import config
 import db_access
+import http_data_loader
 import process_commands
 
 CURRENT_DIR = Path(__file__).parent
 
 
-# Integration test
+# Integration test (performs real HTTP calls)
 
 
 class User:
@@ -111,6 +112,32 @@ def test_people_in_orbit_if_has_data():
     last_daily_data = db_access.get_daily_data()
     assert last_daily_data is not None
     assert last_daily_data['astronauts'] == data_for_yesterday
+
+
+def test_people_in_orbit_if_network_error(mocker):
+    user_john = User(1, 'John')
+    chat_john = Chat(1)
+    message1 = Message(user_john, chat_john, '/peopleinorbit')
+
+    mocker.patch.object(http_data_loader, 'load_astronauts', side_effect=Exception('Network error'))
+
+    process_commands.process_people_in_orbit(message1)
+
+    queries = db_access.read_all_rows(table='queries')
+    assert len(queries) == 1
+
+    users = db_access.read_all_rows(table='users')
+    assert len(users) == 1
+
+    daily_data = db_access.read_all_rows(table='daily_data')
+    assert len(daily_data) == 1
+
+    interval_data = db_access.read_all_rows(table='interval_data')
+    assert len(interval_data) == 1
+
+    last_daily_data = db_access.get_daily_data()
+    assert last_daily_data is not None
+    assert len(last_daily_data['astronauts']) == 0
 
 
 def load_resource(resource_name):

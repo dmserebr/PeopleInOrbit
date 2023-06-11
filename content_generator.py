@@ -7,13 +7,13 @@ import wiki_parser
 
 def get_people_in_orbit():
     text = 'Cannot get information about people in orbit 😕\nPlease contact the bot administrator.'
-    astronauts_data = None
+    astronauts_data = []
 
     try:
         page_soup = http_data_loader.load_astronauts()
         astronauts_data = wiki_parser.get_astronauts(page_soup)
         text = message_formatter.generate_msg(astronauts_data)
     except Exception as ex:
-        logging.exception('Error while parsing data from wiki', ex)
+        logging.exception('Error while parsing data from wiki')
 
     return text, astronauts_data
