@@ -21,9 +21,13 @@ def get_astronauts(soup):
                     astronaut_a = astronaut_row.find('a', recursive=False)
                     astronaut_name = astronaut_a.get_text()
                     astronaut_url = astronaut_a['href']
-                    country = astronaut_row.find('span', class_='flagicon').find('a')
-                    country_name = country['title']
-                    country_url = country['href']
+                    country_with_url = astronaut_row.find('span', class_='flagicon').find('a')
+                    if country_with_url: # before 06-23
+                        country_name = country_with_url['title']
+                        country_url = country_with_url['href']
+                    else:
+                        country_name = astronaut_row.contents[1].text[:-1]
+                        country_url = None
 
                     astronauts.append({
                         'name': astronaut_name,

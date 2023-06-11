@@ -13,7 +13,7 @@ def get_people_in_orbit():
         page_soup = http_data_loader.load_astronauts()
         astronauts_data = wiki_parser.get_astronauts(page_soup)
         text = message_formatter.generate_msg(astronauts_data)
-    except Exception:
-        logging.exception('Error while parsing data from wiki')
+    except Exception as ex:
+        logging.exception('Error while parsing data from wiki', ex)
 
     return text, astronauts_data

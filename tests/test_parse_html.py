@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 import http_data_loader
 import wiki_parser
 
@@ -11,13 +13,16 @@ def load_resource(resource_name):
     return open(CURRENT_DIR / 'resources' / resource_name, encoding='utf-8').read()
 
 
-def test_parse_html(mocker):
-    mocker.patch.object(http_data_loader, 'load_page_content', return_value=load_resource('test_page_body'))
+@pytest.mark.parametrize('body_filename, expected_parsed_data_filename',
+                         [('test_page_body', 'test_astronauts_data.json'),
+                          ('test_page_body_0623', 'test_astronauts_data_0623.json')])
+def test_parse_html(mocker, body_filename, expected_parsed_data_filename):
+    mocker.patch.object(http_data_loader, 'load_page_content', return_value=load_resource(body_filename))
 
     page_soup = http_data_loader.load_astronauts()
     astronauts_data = wiki_parser.get_astronauts(page_soup)
 
-    expected_data = json.loads(load_resource('test_astronauts_data.json'))
+    expected_data = json.loads(load_resource(expected_parsed_data_filename))
     assert expected_data == astronauts_data
 
 
