@@ -42,12 +42,14 @@ jobs:
         pytest
   redeploy:
     runs-on: ubuntu-latest
+    environment: Test-runner
     needs: [build]
+
     steps:
     - uses: joelwmale/webhook-action@master
       name: Redeploy via webhook call
       env:
+        DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
         DEPLOY_WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
       with:
-        url: ${{ secrets.DEPLOY_WEBHOOK_URL }}
         headers: '{"secret": "$DEPLOY_WEBHOOK_SECRET"}'
