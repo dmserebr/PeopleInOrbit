@@ -49,7 +49,7 @@ jobs:
     - uses: joelwmale/webhook-action@master
       name: Redeploy via webhook call
       env:
-        DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
-        DEPLOY_WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+        WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
       with:
-        headers: '{"secret": "$DEPLOY_WEBHOOK_SECRET"}'
+        headers: '{"secret": "$WEBHOOK_SECRET"}'
