@@ -53,4 +53,4 @@ jobs:
         WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
       with:
         headers: '{"secret": "$WEBHOOK_SECRET"}'
-        body: ''
+        body: '{}'
