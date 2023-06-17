@@ -46,11 +46,13 @@ jobs:
     needs: [build]
 
     steps:
+    - name: Set headers env var
+      run: |
+        echo "headers={\"secret\": \"${{ secrets.DEPLOY_WEBHOOK_SECRET }}\"}" >> $GITHUB_ENV
     - uses: joelwmale/webhook-action@master
       name: Redeploy via webhook call
       env:
         WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
         WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
       with:
-        headers: '{"secret": ${process.env.WEBHOOK_SECRET}}'
         body: '{}'
