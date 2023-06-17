@@ -52,5 +52,5 @@ jobs:
         WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
         WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
       with:
-        headers: '{"secret": "$WEBHOOK_SECRET"}'
+        headers: '{"secret": process.env.WEBHOOK_SECRET}'
         body: '{}'
