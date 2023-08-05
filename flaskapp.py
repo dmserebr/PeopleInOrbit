@@ -17,10 +17,9 @@ def index():
     result = {}
     try:
         last_daily_data = db_access.get_valid_daily_data()
-        astronauts = last_daily_data['astronauts']
 
         items = []
-        for astronaut in astronauts:
+        for astronaut in last_daily_data.astronauts:
             item = {
                 'name': astronaut['name'],
                 'wiki_url': config.WIKI_URL + astronaut['url'],
