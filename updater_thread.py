@@ -11,22 +11,21 @@ import http_data_loader
 import message_formatter
 import send_messages
 import wiki_parser
+from objects.astronauts_data import AstronautsData
 
 
 def process_updates():
     logging.info('Updating astronaut data according to schedule')
-    astronauts_data = None
-    try:
-        astronauts_data = get_astronauts_data()
-    except Exception:
-        logging.exception('Error while updating astronauts data')
+    astronauts_data = get_astronauts_data()
 
-    data_for_yesterday = db_access.get_daily_data(exclude_today=True)
-    astronauts_data_for_yesterday = data_for_yesterday['astronauts'] if data_for_yesterday else []
+    db_access.store_interval_data(astronauts_data)
+    db_access.store_daily_data(astronauts_data)
 
-    payload = {'astronauts': astronauts_data}
-    db_access.store_interval_data(payload)
-    db_access.store_daily_data(payload)
+    if not astronauts_data.is_valid:
+        return
+
+    data_for_yesterday = db_access.get_valid_daily_data(exclude_today=True)
+    astronauts_data_for_yesterday = data_for_yesterday if data_for_yesterday else AstronautsData()
 
     # send updates
     updates = calculate_updates(astronauts_data, astronauts_data_for_yesterday)
@@ -50,13 +49,20 @@ def process_updates():
 
 def get_astronauts_data():
     logging.info('Start get_astronauts_data')
+    result = AstronautsData()
 
-    page_soup = http_data_loader.load_astronauts()
-    astronauts_data = wiki_parser.get_astronauts(page_soup)
-    enriched_astronauts_data = enrich_with_images(astronauts_data)
+    try:
+        page_soup = http_data_loader.load_astronauts()
+        astronauts_data = wiki_parser.get_astronauts(page_soup)
+        enriched_astronauts_data = enrich_with_images(astronauts_data)
+
+        result.astronauts = enriched_astronauts_data
+        result.is_valid = True
+    except Exception:
+        logging.exception('Error while updating astronauts data')
 
     logging.info('Finish get_astronauts_data')
-    return enriched_astronauts_data
+    return result
 
 
 def enrich_with_images(astronauts_data):
@@ -73,11 +79,11 @@ def enrich_with_images(astronauts_data):
 
 
 def calculate_updates(data, data_for_yesterday):
-    names_today = [astronaut['name'] for astronaut in data]
-    names_yesterday = [astronaut['name'] for astronaut in data_for_yesterday]
+    names_today = [astronaut['name'] for astronaut in data.astronauts]
+    names_yesterday = [astronaut['name'] for astronaut in data_for_yesterday.astronauts]
 
-    added = [astronaut for astronaut in data if not astronaut['name'] in names_yesterday]
-    removed = [astronaut for astronaut in data_for_yesterday if not astronaut['name'] in names_today]
+    added = [astronaut for astronaut in data.astronauts if not astronaut['name'] in names_yesterday]
+    removed = [astronaut for astronaut in data_for_yesterday.astronauts if not astronaut['name'] in names_today]
 
     if added + removed:
         return {'added': added, 'removed': removed}

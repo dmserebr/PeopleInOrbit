@@ -8,6 +8,7 @@ import pytest
 import config
 import db_access
 import updater_thread
+from objects.astronauts_data import AstronautsData
 
 CURRENT_DIR = Path(__file__).parent
 
@@ -33,7 +34,7 @@ def load_resource(resource_name):
 
 
 def test_updater_if_no_data(mocker):
-    mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=[])
+    mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=AstronautsData())
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
 
@@ -43,8 +44,9 @@ def test_updater_if_no_data(mocker):
 
 
 def test_updater_if_no_previous_data(mocker):
-    mocker.patch.object(updater_thread, 'get_astronauts_data',
-                        return_value=json.loads(load_resource('test_astronauts_data.json')))
+    test_astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
+    mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=AstronautsData(**test_astronauts_data))
+    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=AstronautsData())
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
     mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')
@@ -69,8 +71,8 @@ def test_updater_if_no_previous_data(mocker):
 
 def test_updater_if_new_data_same_as_previous(mocker):
     test_astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
-    mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=test_astronauts_data)
-    mocker.patch.object(db_access, 'get_daily_data', return_value={'astronauts': test_astronauts_data})
+    mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=AstronautsData(**test_astronauts_data))
+    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=AstronautsData(**test_astronauts_data))
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
     mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')
@@ -84,11 +86,13 @@ def test_updater_if_new_data_same_as_previous(mocker):
 
 def test_updater_if_data_is_different(mocker):
     astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
-    data_for_today = astronauts_data[:-2]
-    data_for_yesterday = astronauts_data[1:]
+    data_for_today = AstronautsData(**astronauts_data)
+    data_for_today.astronauts = data_for_today.astronauts[:-2]
+    data_for_yesterday = AstronautsData(**astronauts_data)
+    data_for_yesterday.astronauts = data_for_yesterday.astronauts[1:]
 
     mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=data_for_today)
-    mocker.patch.object(db_access, 'get_daily_data', return_value={'astronauts': data_for_yesterday})
+    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=data_for_yesterday)
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
     mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')
@@ -114,3 +118,18 @@ def test_updater_if_data_is_different(mocker):
            '😢😢 2 people left orbit'
     assert firebase_call_args[0].args[0][1].notification.body == \
            'Deng Qingming 🇨🇳, Zhang Lu 🇨🇳 have left Tiangong space station'
+
+
+def test_updater_if_new_data_empty_but_invalid(mocker):
+    test_astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
+    mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=AstronautsData([]))
+    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=AstronautsData(**test_astronauts_data))
+    mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
+    mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
+    mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')
+
+    updater_thread.firebase_sender.is_initialized = True
+    updater_thread.process_updates()
+
+    updater_thread.send_messages.bot.send_message.assert_not_called()
+    updater_thread.firebase_sender.firebase_admin.messaging.send_all.assert_not_called()

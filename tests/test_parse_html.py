@@ -23,7 +23,7 @@ def test_parse_html(mocker, body_filename, expected_parsed_data_filename):
     astronauts_data = wiki_parser.get_astronauts(page_soup)
 
     expected_data = json.loads(load_resource(expected_parsed_data_filename))
-    assert expected_data == astronauts_data
+    assert expected_data['astronauts'] == astronauts_data
 
 
 def test_parse_person_page(mocker):

@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 import config
+from objects.astronauts_data import AstronautsData
 
 
 def sqlite_connect():
@@ -45,7 +46,7 @@ def store_user(user_info, chat_id):
 
 def store_interval_data(payload):
     conn = sqlite_connect()
-    payload_dump = json.dumps(payload)
+    payload_dump = json.dumps(payload.__dict__)
     conn.execute('''INSERT INTO interval_data (data) VALUES (?)''', (payload_dump,))
     conn.commit()
     conn.close()
@@ -53,7 +54,7 @@ def store_interval_data(payload):
 
 def store_daily_data(payload):
     conn = sqlite_connect()
-    payload_dump = json.dumps(payload)
+    payload_dump = json.dumps(payload.__dict__)
     conn.execute('''INSERT OR REPLACE INTO daily_data (day, data) VALUES (DATE('now'), ?)''', (payload_dump,))
     conn.commit()
     conn.close()
@@ -61,7 +62,7 @@ def store_daily_data(payload):
 
 def store_data_with_ts(payload, ts):
     conn = sqlite_connect()
-    payload_dump = json.dumps(payload)
+    payload_dump = json.dumps(payload.__dict__)
     conn.execute('''INSERT OR REPLACE INTO daily_data (day, data, update_ts) VALUES (?, ?, ?)''',
                  (ts.date(), payload_dump, ts))
     conn.execute('''INSERT INTO interval_data (interval_ts, data) VALUES (?, ?)''', (ts, payload_dump))
@@ -158,11 +159,11 @@ def read_all_rows(table):
     return rows
 
 
-def get_daily_data(exclude_today=False):
+def get_valid_daily_data(exclude_today=False):
     conn = sqlite_connect()
     c = conn.cursor()
 
-    sql = 'SELECT data FROM daily_data ORDER BY day DESC LIMIT 1' \
+    sql = 'SELECT data FROM daily_data{} ORDER BY day DESC LIMIT 1' \
         .format(' WHERE day < DATE(\'now\')' if exclude_today else '')
     c.execute(sql)
 
@@ -174,7 +175,8 @@ def get_daily_data(exclude_today=False):
         return None
 
     try:
-        return json.loads(row[0])
+        astronauts_data_json = json.loads(row[0])
+        return AstronautsData(**astronauts_data_json)
     except Exception:
         logging.exception('Error when parsing JSON')
         return None

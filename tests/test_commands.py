@@ -9,6 +9,7 @@ import config
 import db_access
 import http_data_loader
 import process_commands
+from objects.astronauts_data import AstronautsData
 
 CURRENT_DIR = Path(__file__).parent
 
@@ -77,17 +78,18 @@ def test_people_in_orbit():
     interval_data = db_access.read_all_rows(table='interval_data')
     assert len(interval_data) == 3
 
-    last_daily_data = db_access.get_daily_data()
+    last_daily_data = db_access.get_valid_daily_data()
     assert last_daily_data is not None
-    assert len(last_daily_data['astronauts']) > 0
-    first_astronaut = last_daily_data['astronauts'][0]
+    assert last_daily_data.is_valid
+    assert len(last_daily_data.astronauts) > 0
+    first_astronaut = last_daily_data.astronauts[0]
     assert first_astronaut['name']
     assert first_astronaut['country']
 
 
 def test_people_in_orbit_if_has_data():
     data_for_yesterday = json.loads(load_resource('test_astronauts_data.json'))
-    db_access.store_data_with_ts({'astronauts': data_for_yesterday}, datetime.utcnow() - timedelta(days=1))
+    db_access.store_data_with_ts(AstronautsData(data_for_yesterday, True), datetime.utcnow() - timedelta(days=1))
 
     user_john = User(1, 'John')
     chat_john = Chat(1)
@@ -109,9 +111,10 @@ def test_people_in_orbit_if_has_data():
     interval_data = db_access.read_all_rows(table='interval_data')
     assert len(interval_data) == 3
 
-    last_daily_data = db_access.get_daily_data()
+    last_daily_data = db_access.get_valid_daily_data()
     assert last_daily_data is not None
-    assert last_daily_data['astronauts'] == data_for_yesterday
+    assert last_daily_data.is_valid
+    assert last_daily_data.astronauts == data_for_yesterday
 
 
 def test_people_in_orbit_if_network_error(mocker):
@@ -135,9 +138,10 @@ def test_people_in_orbit_if_network_error(mocker):
     interval_data = db_access.read_all_rows(table='interval_data')
     assert len(interval_data) == 1
 
-    last_daily_data = db_access.get_daily_data()
+    last_daily_data = db_access.get_valid_daily_data()
     assert last_daily_data is not None
-    assert len(last_daily_data['astronauts']) == 0
+    assert not last_daily_data.is_valid
+    assert len(last_daily_data.astronauts) == 0
 
 
 def load_resource(resource_name):
