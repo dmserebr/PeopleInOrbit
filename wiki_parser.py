@@ -47,7 +47,6 @@ def get_person_image(soup):
     if image_row:
         return {
             'src': image_row.find('img')["src"],
-            'alt': image_row.find('img')["alt"],
             'width': int(image_row.find('img')['width']),
             'height': int(image_row.find('img')['height'])
         }

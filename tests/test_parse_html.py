@@ -36,7 +36,6 @@ def test_parse_person_page(mocker):
     expected_data = {
         'src': '//upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Sergey_Prokopyev_-_NASA_portrait.jpg/'
                '200px-Sergey_Prokopyev_-_NASA_portrait.jpg',
-        'alt': 'Sergey Prokopyev - NASA portrait.jpg',
         'width': 200,
         'height': 258
     }
