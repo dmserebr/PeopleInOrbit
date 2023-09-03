@@ -12,7 +12,12 @@ COUNTRY_EMOJIS = {
     'Italy': '🇮🇹',
     'United Arab Emirates': '🇦🇪',
     'UAE': '🇦🇪',
-    'Saudi Arabia': '🇸🇦'
+    'Saudi Arabia': '🇸🇦',
+    'Denmark': '🇩🇰',
+    'Turkey': '🇹🇷',
+    'Türkiye': '🇹🇷',
+    'Sweden': '🇸🇪',
+    'Belarus': '🇧🇾'
 }
 
 MISSING_COUNTRY = '🇺🇳'
