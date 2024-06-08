@@ -139,9 +139,7 @@ def test_people_in_orbit_if_network_error(mocker):
     assert len(interval_data) == 1
 
     last_daily_data = db_access.get_valid_daily_data()
-    assert last_daily_data is not None
-    assert not last_daily_data.is_valid
-    assert len(last_daily_data.astronauts) == 0
+    assert last_daily_data is None
 
 
 def load_resource(resource_name):

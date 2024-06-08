@@ -115,6 +115,57 @@ def test_updater_if_data_different(mocker):
     ])
 
 
+def test_updater_if_yesterday_data_invalid(mocker):
+    test_start_ts = datetime.utcnow().replace(microsecond=0)  # CURRENT_TIMESTAMP in SQLite is in UTC without millis
+
+    astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
+    data_for_today = AstronautsData(**astronauts_data)
+    data_for_today.astronauts = data_for_today.astronauts[:-2]
+    data_for_two_days_ago = AstronautsData(**astronauts_data)
+    data_for_two_days_ago.astronauts = data_for_two_days_ago.astronauts[1:]
+
+    invalid_data = json.loads(load_resource('test_astronauts_data_invalid.json'))
+    data_for_yesterday = AstronautsData(**invalid_data)
+
+    mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=data_for_today)
+    mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
+    db_access.store_user(User(1, 'John'), 10)
+
+    db_access.store_data_with_ts(data_for_two_days_ago, datetime.strptime('2022-12-14', '%Y-%m-%d'))
+    db_access.store_data_with_ts(data_for_yesterday, datetime.strptime('2022-12-15', '%Y-%m-%d'))
+
+    updater_thread.process_updates()
+
+    final_daily_data = db_access.read_all_rows('daily_data')
+    assert len(final_daily_data) == 3
+    assert final_daily_data[0][0] == '2022-12-14'
+    assert final_daily_data[0][1] == json.dumps(data_for_two_days_ago.__dict__)
+    assert final_daily_data[0][2] == '2022-12-14 00:00:00'
+    assert final_daily_data[1][0] == '2022-12-15'
+    assert final_daily_data[1][1] == json.dumps(data_for_yesterday.__dict__)
+    assert final_daily_data[1][2] == '2022-12-15 00:00:00'
+    assert final_daily_data[2][0] == datetime.strftime(datetime.utcnow().date(), '%Y-%m-%d')
+    assert final_daily_data[2][1] == json.dumps(data_for_today.__dict__)
+    assert datetime.strptime(final_daily_data[2][2], '%Y-%m-%d %H:%M:%S') >= test_start_ts
+
+    final_interval_data = db_access.read_all_rows('interval_data')
+    assert len(final_interval_data) == 3
+    assert final_interval_data[0][1] == '2022-12-14 00:00:00'
+    assert final_interval_data[0][2] == json.dumps(data_for_two_days_ago.__dict__)
+    assert final_interval_data[1][1] == '2022-12-15 00:00:00'
+    assert final_interval_data[1][2] == json.dumps(data_for_yesterday.__dict__)
+    assert datetime.strptime(final_interval_data[2][1], '%Y-%m-%d %H:%M:%S') >= test_start_ts
+    assert final_interval_data[2][2] == json.dumps(data_for_today.__dict__)
+
+    expected_added_message = load_resource('message_added_data_different.txt')
+    expected_removed_message = load_resource('message_removed_data_different.txt')
+
+    updater_thread.send_messages.bot.send_message.assert_has_calls([
+        call(10, expected_added_message),
+        call(10, expected_removed_message)
+    ])
+
+
 def test_updater_if_command_called_between_daily_updates(mocker):
     # 0. first day - updater sets daily data
     # 1. data changes

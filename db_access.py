@@ -163,9 +163,9 @@ def get_valid_daily_data(exclude_today=False):
     conn = sqlite_connect()
     c = conn.cursor()
 
-    # TODO test with invalid last daily data
     sql = 'SELECT data FROM daily_data ' \
-          'WHERE json_extract(data, \'$.astronauts\') IS NOT NULL {}' \
+          'WHERE json_extract(data, \'$.astronauts\') IS NOT NULL ' \
+          'AND json_extract(data, \'$.astronauts\') != \'[]\' {}' \
           'ORDER BY day DESC LIMIT 1' \
         .format('AND day < DATE(\'now\') ' if exclude_today else '')
     c.execute(sql)
