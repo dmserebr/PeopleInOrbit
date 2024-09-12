@@ -10,36 +10,54 @@ def get_astronauts(soup):
             station_name = station_a.get_text()
             station_url = station_a['href']
 
-            mission_rows = station_row.find('td').find('table').find('tbody')
-            for mission_row in mission_rows:
-                mission_a = mission_row.find('th').find('a')
-                mission_name = mission_a.get_text()
-                mission_url = mission_a['href']
+            mission_rows_table = station_row.find('td').find('table')
+            if mission_rows_table:
+                mission_rows = mission_rows_table.find('tbody')
+                for mission_row in mission_rows:
+                    mission_header = mission_row.find('th')
+                    mission_name = mission_header.get_text()
+                    mission_url = None
+                    mission_a = mission_header.find('a')
+                    if mission_a:
+                        mission_name = mission_a.get_text()
+                        mission_url = mission_a['href']
 
-                astronaut_rows = mission_row.find('td').find('div').find('ul').find_all('li')
-                for astronaut_row in astronaut_rows:
-                    astronaut_a = astronaut_row.find('a', recursive=False)
-                    astronaut_name = astronaut_a.get_text()
-                    astronaut_url = astronaut_a['href']
-                    country_with_url = astronaut_row.find('span', class_='flagicon').find('a')
-                    if country_with_url: # before 06-23
-                        country_name = country_with_url['title']
-                        country_url = country_with_url['href']
-                    else:
-                        country_name = astronaut_row.contents[1].text[:-1]
-                        country_url = None
+                    astronaut_rows = mission_row.find('td').find('div').find('ul').find_all('li')
+                    process_astronaut_rows(astronauts, astronaut_rows,
+                                           mission_name, mission_url, station_name, station_url)
+            else:
+                # hack for Polaris Dawn (0924)
+                no_mission_rows = station_row.find('td').find('div')
+                astronaut_rows = no_mission_rows.find('ul').find_all('li')
+                process_astronaut_rows(astronauts, astronaut_rows,
+                                       station_name, station_url, station_name, station_url)
 
-                    astronauts.append({
-                        'name': astronaut_name,
-                        'url': astronaut_url,
-                        'country': country_name,
-                        'country_url': country_url,
-                        'mission_name': mission_name,
-                        'mission_url': mission_url,
-                        'station_name': station_name,
-                        'station_url': station_url
-                    })
     return astronauts
+
+
+def process_astronaut_rows(astronauts, astronaut_rows, mission_name, mission_url, station_name, station_url):
+    for astronaut_row in astronaut_rows:
+        astronaut_a = astronaut_row.find('a', recursive=False)
+        astronaut_name = astronaut_a.get_text()
+        astronaut_url = astronaut_a['href']
+        country_with_url = astronaut_row.find('span', class_='flagicon').find('a')
+        if country_with_url:  # before 06-23
+            country_name = country_with_url['title']
+            country_url = country_with_url['href']
+        else:
+            country_name = astronaut_row.contents[1].text[:-1]
+            country_url = None
+
+        astronauts.append({
+            'name': astronaut_name,
+            'url': astronaut_url,
+            'country': country_name,
+            'country_url': country_url,
+            'mission_name': mission_name,
+            'mission_url': mission_url,
+            'station_name': station_name,
+            'station_url': station_url
+        })
 
 
 def get_person_image(soup):
