@@ -1,7 +1,7 @@
 import json
 import os
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pathlib import Path
 from unittest.mock import call
 
@@ -14,7 +14,9 @@ import updater_thread
 from objects.astronauts_data import AstronautsData
 
 CURRENT_DIR = Path(__file__).parent
-
+TODAY = date.today().strftime("%Y-%m-%d")
+YESTERDAY = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+TWO_DAYS_AGO = (date.today() - timedelta(days=2)).strftime("%Y-%m-%d")
 
 class User:
     def __init__(self, id, first_name):
@@ -86,22 +88,22 @@ def test_updater_if_data_different(mocker):
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     db_access.store_user(User(1, 'John'), 10)
 
-    db_access.store_data_with_ts(data_for_yesterday, datetime.strptime('2022-12-15', '%Y-%m-%d'))
+    db_access.store_data_with_ts(data_for_yesterday, datetime.strptime(YESTERDAY, "%Y-%m-%d"))
 
     updater_thread.process_updates()
 
     final_daily_data = db_access.read_all_rows('daily_data')
     assert len(final_daily_data) == 2
-    assert final_daily_data[0][0] == '2022-12-15'
+    assert final_daily_data[0][0] == YESTERDAY
     assert final_daily_data[0][1] == json.dumps(data_for_yesterday.__dict__)
-    assert final_daily_data[0][2] == '2022-12-15 00:00:00'
-    assert final_daily_data[1][0] == datetime.strftime(datetime.utcnow().date(), '%Y-%m-%d')
+    assert final_daily_data[0][2] == YESTERDAY + ' 00:00:00'
+    assert final_daily_data[1][0] == TODAY
     assert final_daily_data[1][1] == json.dumps(data_for_today.__dict__)
     assert datetime.strptime(final_daily_data[1][2], '%Y-%m-%d %H:%M:%S') >= test_start_ts
 
     final_interval_data = db_access.read_all_rows('interval_data')
     assert len(final_interval_data) == 2
-    assert final_interval_data[0][1] == '2022-12-15 00:00:00'
+    assert final_interval_data[0][1] == YESTERDAY + ' 00:00:00'
     assert final_interval_data[0][2] == json.dumps(data_for_yesterday.__dict__)
     assert datetime.strptime(final_interval_data[1][1], '%Y-%m-%d %H:%M:%S') >= test_start_ts
     assert final_interval_data[1][2] == json.dumps(data_for_today.__dict__)
@@ -131,28 +133,28 @@ def test_updater_if_yesterday_data_invalid(mocker):
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     db_access.store_user(User(1, 'John'), 10)
 
-    db_access.store_data_with_ts(data_for_two_days_ago, datetime.strptime('2022-12-14', '%Y-%m-%d'))
-    db_access.store_data_with_ts(data_for_yesterday, datetime.strptime('2022-12-15', '%Y-%m-%d'))
+    db_access.store_data_with_ts(data_for_two_days_ago, datetime.strptime(TWO_DAYS_AGO, "%Y-%m-%d"))
+    db_access.store_data_with_ts(data_for_yesterday, datetime.strptime(YESTERDAY, "%Y-%m-%d"))
 
     updater_thread.process_updates()
 
     final_daily_data = db_access.read_all_rows('daily_data')
     assert len(final_daily_data) == 3
-    assert final_daily_data[0][0] == '2022-12-14'
+    assert final_daily_data[0][0] == TWO_DAYS_AGO
     assert final_daily_data[0][1] == json.dumps(data_for_two_days_ago.__dict__)
-    assert final_daily_data[0][2] == '2022-12-14 00:00:00'
-    assert final_daily_data[1][0] == '2022-12-15'
+    assert final_daily_data[0][2] == TWO_DAYS_AGO + ' 00:00:00'
+    assert final_daily_data[1][0] == YESTERDAY
     assert final_daily_data[1][1] == json.dumps(data_for_yesterday.__dict__)
-    assert final_daily_data[1][2] == '2022-12-15 00:00:00'
+    assert final_daily_data[1][2] == YESTERDAY + ' 00:00:00'
     assert final_daily_data[2][0] == datetime.strftime(datetime.utcnow().date(), '%Y-%m-%d')
     assert final_daily_data[2][1] == json.dumps(data_for_today.__dict__)
     assert datetime.strptime(final_daily_data[2][2], '%Y-%m-%d %H:%M:%S') >= test_start_ts
 
     final_interval_data = db_access.read_all_rows('interval_data')
     assert len(final_interval_data) == 3
-    assert final_interval_data[0][1] == '2022-12-14 00:00:00'
+    assert final_interval_data[0][1] == TWO_DAYS_AGO + ' 00:00:00'
     assert final_interval_data[0][2] == json.dumps(data_for_two_days_ago.__dict__)
-    assert final_interval_data[1][1] == '2022-12-15 00:00:00'
+    assert final_interval_data[1][1] == YESTERDAY + ' 00:00:00'
     assert final_interval_data[1][2] == json.dumps(data_for_yesterday.__dict__)
     assert datetime.strptime(final_interval_data[2][1], '%Y-%m-%d %H:%M:%S') >= test_start_ts
     assert final_interval_data[2][2] == json.dumps(data_for_today.__dict__)

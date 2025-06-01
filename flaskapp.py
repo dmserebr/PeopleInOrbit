@@ -16,7 +16,7 @@ def index():
 
     result = {}
     try:
-        last_daily_data = db_access.get_valid_daily_data()
+        day, last_daily_data = db_access.get_valid_daily_data()
 
         items = []
         for astronaut in last_daily_data.astronauts:

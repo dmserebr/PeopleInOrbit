@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import call
 
@@ -11,6 +12,7 @@ import updater_thread
 from objects.astronauts_data import AstronautsData
 
 CURRENT_DIR = Path(__file__).parent
+YESTERDAY = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 
 @pytest.fixture(autouse=True)
@@ -46,7 +48,7 @@ def test_updater_if_no_data(mocker):
 def test_updater_if_no_previous_data(mocker):
     test_astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
     mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=AstronautsData(**test_astronauts_data))
-    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=AstronautsData())
+    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=(YESTERDAY, AstronautsData()))
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
     mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')
@@ -72,7 +74,8 @@ def test_updater_if_no_previous_data(mocker):
 def test_updater_if_new_data_same_as_previous(mocker):
     test_astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
     mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=AstronautsData(**test_astronauts_data))
-    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=AstronautsData(**test_astronauts_data))
+    mocker.patch.object(db_access, 'get_valid_daily_data',
+                        return_value=(YESTERDAY, AstronautsData(**test_astronauts_data)))
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
     mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')
@@ -92,7 +95,7 @@ def test_updater_if_data_is_different(mocker):
     data_for_yesterday.astronauts = data_for_yesterday.astronauts[1:]
 
     mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=data_for_today)
-    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=data_for_yesterday)
+    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=(YESTERDAY, data_for_yesterday))
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
     mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')
@@ -123,7 +126,8 @@ def test_updater_if_data_is_different(mocker):
 def test_updater_if_new_data_empty_but_invalid(mocker):
     test_astronauts_data = json.loads(load_resource('test_astronauts_data.json'))
     mocker.patch.object(updater_thread, 'get_astronauts_data', return_value=AstronautsData([]))
-    mocker.patch.object(db_access, 'get_valid_daily_data', return_value=AstronautsData(**test_astronauts_data))
+    mocker.patch.object(db_access, 'get_valid_daily_data',
+                        return_value=(YESTERDAY, AstronautsData(**test_astronauts_data)))
     mocker.patch.object(updater_thread.send_messages.bot, 'send_message')
     mocker.patch.object(db_access, 'get_users_to_send_updates', return_value=[(1, 1, None)])
     mocker.patch.object(updater_thread.firebase_sender.firebase_admin.messaging, 'send_all')

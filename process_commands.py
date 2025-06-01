@@ -15,6 +15,7 @@ def process_people_in_orbit(message):
 
     payload = AstronautsData(astronauts_data, len(astronauts_data) > 0)
     db_access.store_interval_data(payload)
-    if not db_access.get_valid_daily_data():
+    day, valid_daily_data = db_access.get_valid_daily_data()
+    if not valid_daily_data:
         db_access.store_daily_data(payload)
     return text

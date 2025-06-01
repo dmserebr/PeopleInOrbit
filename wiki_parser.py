@@ -1,5 +1,8 @@
 def get_astronauts(soup):
-    table_root = soup.find(id="People_currently_in_low_Earth_orbit").parent.parent.parent
+    def box_search_condition(txt):
+        return txt and txt.startswith("People_currently_in_low_Earth_orbit")
+
+    table_root = soup.find(id=box_search_condition).parent.parent.parent
     station_rows = table_root.find_all('tr', recursive=False)
 
     astronauts = []

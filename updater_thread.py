@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+from datetime import date, datetime
 
 import schedule
 
@@ -24,7 +25,13 @@ def process_updates():
     if not astronauts_data.is_valid:
         return
 
-    data_for_yesterday = db_access.get_valid_daily_data(exclude_today=True)
+    day, data_for_yesterday = db_access.get_valid_daily_data(exclude_today=True)
+    parsed_day = datetime.strptime(day, "%Y-%m-%d").date()
+
+    if (date.today() - parsed_day).days > config.UPDATER_MAX_DAYS_TO_TRY_RESTORE:
+        logging.warning('Last successful update was at {parsed_day}, do not send stale updates')
+        return
+
     astronauts_data_for_yesterday = data_for_yesterday if data_for_yesterday else AstronautsData()
 
     # send updates

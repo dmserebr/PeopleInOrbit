@@ -163,7 +163,7 @@ def get_valid_daily_data(exclude_today=False):
     conn = sqlite_connect()
     c = conn.cursor()
 
-    sql = 'SELECT data FROM daily_data ' \
+    sql = 'SELECT day, data FROM daily_data ' \
           'WHERE json_extract(data, \'$.astronauts\') IS NOT NULL ' \
           'AND json_extract(data, \'$.astronauts\') != \'[]\' {}' \
           'ORDER BY day DESC LIMIT 1' \
@@ -175,14 +175,14 @@ def get_valid_daily_data(exclude_today=False):
 
     if not row:
         logging.error('Error: no daily data exists')
-        return None
+        return None, None
 
     try:
-        astronauts_data_json = json.loads(row[0])
-        return AstronautsData(**astronauts_data_json)
+        astronauts_data_json = json.loads(row[1])
+        return row[0], AstronautsData(**astronauts_data_json)
     except Exception:
         logging.exception('Error when parsing JSON')
-        return None
+        return None, None
 
 
 def get_users_to_send_updates():
