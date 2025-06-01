@@ -18,7 +18,7 @@ def init_client(config_path):
 
 
 def send_push_notifications(notifications):
-    global is_initialized
+    global is_initialized  # noqa: F824
 
     if not is_initialized:
         logging.warning('Firebase app is not initialized! Skipping notifications!')
